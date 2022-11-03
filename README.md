@@ -31,3 +31,50 @@ docker service ps demo
 docker service logs demo
 docker service rm demo
 ```
+
+## Deploy to Kubernetes
+```yaml
+# bb.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bb-demo
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      bb: web
+  template:
+    metadata:
+      labels:
+        bb: web
+    spec:
+      containers:
+      - name: bb-site
+        image: getting-started
+        imagePullPolicy: Never
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bb-entrypoint
+  namespace: default
+spec:
+  type: NodePort
+  selector:
+    bb: web
+  ports:
+  - port: 3000
+    targetPort: 3000
+    nodePort: 30001
+```
+```shell
+kubectl apply -f bb.yaml
+kubectl get deployments
+kubectl get services
+```
+Access localhost:30001
+```shell
+kubectl delete -f bb.yaml
+```
